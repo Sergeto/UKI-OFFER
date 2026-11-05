@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, STEPS, type Organization } from '../lib/supabase'
 import { useSession } from '../lib/session'
-import { cleanCui, companyCase, fixDiacritics, isValidCui } from '../lib/text'
+import { cleanCui, companyName, fixDiacritics, isValidCui } from '../lib/text'
 import { Icon } from '../lib/icons'
 import { Progress } from './Progress'
 import logo from '../assets/uki-logo-coral.svg'
@@ -37,7 +37,7 @@ export default function Company() {
       return
     }
     setForm({
-      name: companyCase(data.name), cui: data.cui, reg_com: data.reg_com, address: fixDiacritics(data.address),
+      name: companyName(data.name), cui: data.cui, reg_com: data.reg_com, address: fixDiacritics(data.address),
       county: fixDiacritics(data.county), city: fixDiacritics(data.city), phone: data.phone ?? '', vat_payer: !!data.vat_payer,
     })
     setNote('Am găsit firma la ANAF. Verifică datele și corectează dacă e nevoie.')
@@ -47,7 +47,7 @@ export default function Company() {
     if (!form) return
     if (!form.name.trim()) return setError('Lipsește numele firmei.')
     setBusy(true); setError(null)
-    const row = { ...form, name: form.name.trim(), email: session?.user.email ?? null }
+    const row = { ...form, name: companyName(form.name), email: session?.user.email ?? null }
     const res = org
       ? await supabase.from('organizations').update({ ...row, onboarding_step: Math.max(org.onboarding_step, STEPS.logo) }).eq('id', org.id).select().single()
       : await supabase.from('organizations').insert({ ...row, onboarding_step: STEPS.logo }).select().single()

@@ -3,14 +3,22 @@ export function fixDiacritics(s: string) {
   return s.replace(/ş/g, 'ș').replace(/Ş/g, 'Ș').replace(/ţ/g, 'ț').replace(/Ţ/g, 'Ț')
 }
 
-/** „DANTE INTERNATIONAL SA” -> „Dante International SA” (formele juridice rămân cu majuscule). */
-export function companyCase(s: string) {
-  const keep = new Set(['SRL', 'SA', 'PFA', 'II', 'IF', 'SNC', 'SCS', 'SRL-D', 'ONG', 'RA'])
+/**
+ * Numele firmei, scris cum apare pe facturi: majuscule și forma juridică fără puncte.
+ * „Uki Energy S.R.L.” -> „UKI ENERGY SRL”, „dante international s.a.” -> „DANTE INTERNATIONAL SA”.
+ */
+export function companyName(s: string) {
   return fixDiacritics(s)
-    .toLowerCase()
-    .split(/(\s+)/)
-    .map((w) => (keep.has(w.toUpperCase()) ? w.toUpperCase() : w.replace(/^(\p{L})/u, (c) => c.toUpperCase())))
-    .join('')
+    .toUpperCase()
+    .replace(/\bS\.?\s?R\.?\s?L\.?\s?-?\s?D\b\.?/g, 'SRL-D')
+    .replace(/\bS\.\s?R\.\s?L\.?(?=\s|$|,)/g, 'SRL')
+    .replace(/\bS\.\s?A\.?(?=\s|$|,)/g, 'SA')
+    .replace(/\bP\.\s?F\.\s?A\.?(?=\s|$|,)/g, 'PFA')
+    .replace(/\bI\.\s?I\.?(?=\s|$|,)/g, 'II')
+    .replace(/\bI\.\s?F\.?(?=\s|$|,)/g, 'IF')
+    .replace(/\bS\.\s?N\.\s?C\.?(?=\s|$|,)/g, 'SNC')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 /** CUI valid după algoritmul cu cifră de control (cheia 753217532). */
